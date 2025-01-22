@@ -21,12 +21,20 @@ class DayTasksPage extends StatefulWidget {
   final MonthModel month;
   final List<HabitModel> listTask;
   final bool isNew;
+
   @override
   State<DayTasksPage> createState() => _DayTasksPageState();
 }
 
 class _DayTasksPageState extends State<DayTasksPage> {
   DayTasksController controller = DayTasksController();
+  late List<HabitModel> habits;
+
+  @override
+  void initState() {
+    super.initState();
+    habits = List.from(widget.listTask);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,11 +44,11 @@ class _DayTasksPageState extends State<DayTasksPage> {
         elevation: 0,
         backgroundColor: Colors.transparent,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(15),
-        child: Consumer<HabitProvider>(
-          builder: (context, provider, _) {
-            return Column(
+      body: Consumer<HabitProvider>(
+        builder: (context, provider, _) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -63,80 +71,101 @@ class _DayTasksPageState extends State<DayTasksPage> {
                   ),
                 ),
                 const SizedBox(height: 25),
-                ProgressIndicadorWidget(listTask: widget.listTask),
+                ProgressIndicadorWidget(listTask: habits),
                 const SizedBox(height: 20),
                 Expanded(
-                  child: widget.listTask.isEmpty
-                      ? Text(
-                          "You are not tracking any ohabito yet, start by registering one.",
-                          style: TextStyle(color: AppColors.greyLight, fontSize: 16),
+                  child: habits.isEmpty
+                      ? Center(
+                          child: Text(
+                            "Você ainda não está acompanhando nenhum hábito.\nComece registrando um!",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.greyLight,
+                              fontSize: 16,
+                            ),
+                          ),
                         )
-                      : ListView.builder(
-                          itemCount: widget.listTask.length,
+                      : ListView.separated(
+                          itemCount: habits.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
                           itemBuilder: (context, index) {
-                            final habit = widget.listTask[index];
+                            final habit = habits[index];
                             return Dismissible(
-                              key: Key(habit.id),
+                              key: ValueKey(habit.id),
+                              direction: DismissDirection.endToStart,
                               background: Container(
-                                color: Colors.red,
+                                decoration: BoxDecoration(
+                                  color: Colors.red.shade800,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 alignment: Alignment.centerRight,
                                 padding: const EdgeInsets.only(right: 20),
                                 child: const Icon(
-                                  Icons.delete,
+                                  Icons.delete_outline,
                                   color: Colors.white,
+                                  size: 28,
                                 ),
                               ),
-                              direction: DismissDirection.endToStart,
-                              onDismissed: (direction) {
-                                provider.deleteHabit(habit.id);
-                                setState(() {
-                                  widget.listTask.removeAt(index);
-                                });
-                              },
-                              child: Row(
-                                children: [
-                                  Checkbox(
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    value: habit.isFinished,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        habit.isFinished = !habit.isFinished;
-                                      });
-                                      provider.updateHabit(habit);
-                                    },
-                                    checkColor: AppColors.white,
-                                    activeColor: AppColors.green,
-                                    fillColor: WidgetStateProperty.resolveWith<Color>(
-                                      (Set<WidgetState> states) {
-                                        if (habit.isFinished) {
-                                          return AppColors.green;
-                                        }
-                                        return AppColors.greyLight;
-                                      },
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Text(
-                                      habit.description,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.greyDark,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Transform.scale(
+                                      scale: 1.2,
+                                      child: Checkbox(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        value: habit.isFinished,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            habit.isFinished = !habit.isFinished;
+                                          });
+                                          provider.updateHabit(habit);
+                                        },
+                                        checkColor: AppColors.white,
+                                        activeColor: AppColors.green,
+                                        fillColor: WidgetStateProperty.resolveWith<Color>(
+                                          (Set<WidgetState> states) {
+                                            if (habit.isFinished) {
+                                              return AppColors.green;
+                                            }
+                                            return AppColors.greyLight;
+                                          },
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        habit.description,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          color: AppColors.white,
+                                          fontWeight: FontWeight.w500,
+                                          decoration:
+                                              habit.isFinished ? TextDecoration.lineThrough : null,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
                         ),
-                )
+                ),
               ],
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
       floatingActionButton:
           (widget.isNew ? widget.day : widget.day + 1) == DateTime(2023, 1, 5, 14, 30, 0).day &&
@@ -153,7 +182,7 @@ class _DayTasksPageState extends State<DayTasksPage> {
                       (value) {
                         if (value != null) {
                           setState(() {
-                            widget.listTask.add(value);
+                            habits.add(value);
                           });
                         }
                       },

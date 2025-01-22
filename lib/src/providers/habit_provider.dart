@@ -84,6 +84,11 @@ class HabitProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       print('Erro ao deletar hábito: $e');
+      throw Exception('Falha ao excluir hábito');
     }
+  }
+
+  List<HabitModel> getDayHabits(int day, int month) {
+    return _habits.where((habit) => habit.date.day == day && habit.date.month == month).toList();
   }
 }
