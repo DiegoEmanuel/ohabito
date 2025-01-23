@@ -28,13 +28,6 @@ class DayTasksPage extends StatefulWidget {
 
 class _DayTasksPageState extends State<DayTasksPage> {
   DayTasksController controller = DayTasksController();
-  late List<HabitModel> habits;
-
-  @override
-  void initState() {
-    super.initState();
-    habits = List.from(widget.listTask);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +36,15 @@ class _DayTasksPageState extends State<DayTasksPage> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Consumer<HabitProvider>(
         builder: (context, provider, _) {
+          final habits = provider.getDayHabits(widget.day + 1, widget.month.id);
+
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
             child: Column(
@@ -106,6 +105,24 @@ class _DayTasksPageState extends State<DayTasksPage> {
                                   size: 28,
                                 ),
                               ),
+                              onDismissed: (direction) async {
+                                try {
+                                  await provider.deleteHabit(habit.id);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Hábito excluído com sucesso'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Erro ao excluir hábito'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: AppColors.greyDark,
@@ -125,10 +142,13 @@ class _DayTasksPageState extends State<DayTasksPage> {
                                         ),
                                         value: habit.isFinished,
                                         onChanged: (value) {
-                                          setState(() {
-                                            habit.isFinished = !habit.isFinished;
-                                          });
-                                          provider.updateHabit(habit);
+                                          final updatedHabit = HabitModel(
+                                            id: habit.id,
+                                            description: habit.description,
+                                            date: habit.date,
+                                            isFinished: !habit.isFinished,
+                                          );
+                                          provider.updateHabit(updatedHabit);
                                         },
                                         checkColor: AppColors.white,
                                         activeColor: AppColors.green,
@@ -178,14 +198,6 @@ class _DayTasksPageState extends State<DayTasksPage> {
                       MaterialPageRoute(
                         builder: (context) => NewTaskPage(),
                       ),
-                    ).then(
-                      (value) {
-                        if (value != null) {
-                          setState(() {
-                            habits.add(value);
-                          });
-                        }
-                      },
                     );
                   },
                   child: const Icon(Icons.add),

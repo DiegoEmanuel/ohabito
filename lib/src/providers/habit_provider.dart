@@ -56,27 +56,31 @@ class HabitProvider extends ChangeNotifier {
   Future<void> updateHabit(HabitModel habit) async {
     try {
       await _firestore.collection('ohabito').doc(habit.id).update(habit.toMap());
-      int index = _habits.indexWhere((h) => h.id == habit.id);
+
+      final index = _habits.indexWhere((h) => h.id == habit.id);
       if (index != -1) {
         _habits[index] = habit;
-        if (_currentMonth != null) {
-          int monthIndex = _currentMonth!.list.indexWhere((h) => h.id == habit.id);
-          if (monthIndex != -1) {
-            _currentMonth!.list[monthIndex] = habit;
-          }
+      }
+
+      if (_currentMonth != null) {
+        final monthIndex = _currentMonth!.list.indexWhere((h) => h.id == habit.id);
+        if (monthIndex != -1) {
+          _currentMonth!.list[monthIndex] = habit;
         }
       }
+
       notifyListeners();
     } catch (e) {
       print('Erro ao atualizar hábito: $e');
+      throw Exception('Falha ao atualizar hábito');
     }
   }
 
   Future<void> deleteHabit(String habitId) async {
     try {
       await _firestore.collection('ohabito').doc(habitId).delete();
-      _habits.removeWhere((habit) => habit.id == habitId);
 
+      _habits.removeWhere((habit) => habit.id == habitId);
       if (_currentMonth != null) {
         _currentMonth!.list.removeWhere((habit) => habit.id == habitId);
       }
