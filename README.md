@@ -1,4 +1,5 @@
-![image](https://github.com/user-attachments/assets/da661fd6-52be-4fe0-a4a6-1fcd563cedbf)
+
+![habitotítulo](https://github.com/user-attachments/assets/8c02016e-ca1e-436e-b254-09bcc804dfb1)
 
 About • Functionalities • Layout • Technologies • Author • Licença
 
@@ -9,5 +10,5 @@ About • Functionalities • Layout • Technologies • Author • Licença
  - [ ] View all habits of the month,
  - [ ] View list of habits for a day
  - [ ] Check and uncheck completed habits
- - [ ] Create new habits
+ - [x] Create new habits
  - [ ] View completed habits progress
